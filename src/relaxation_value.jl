@@ -258,6 +258,11 @@ function exact_cutting_plane(relaxed_modele, instance)
     pool=[]
     y = relaxed_modele[:y]
     x = relaxed_modele[:x]
+    # nb_contraintes = 0
+    # for (F, S) in list_of_constraint_types(relaxed_modele)
+    #     nb_contraintes += num_constraints(relaxed_modele, F, S)
+    # end
+    # println("nb_contraintes before cutting plane: $nb_contraintes")
     while !is_over
         optimize!(relaxed_modele)
         x_vals = value.(relaxed_modele[:x])
@@ -281,6 +286,13 @@ end
 function heuristic_cutting_plane(relaxed_modele, instance)
     is_over = false
     pool=[]
+    y = relaxed_modele[:y]
+    x = relaxed_modele[:x]
+    # nb_contraintes = 0
+    # for (F, S) in list_of_constraint_types(relaxed_modele)
+    #     nb_contraintes += num_constraints(relaxed_modele, F, S)
+    # end
+    # println("nb_contraintes before cutting plane: $nb_contraintes")
     while !is_over
         optimize!(relaxed_modele)
         x_vals = value.(relaxed_modele[:x])
@@ -290,7 +302,7 @@ function heuristic_cutting_plane(relaxed_modele, instance)
             is_over = true
         else
             for p in res
-              @constraint(relaxed_modele, sum(y[r,Ebis[res[2]-1]] for r in res[3]) <=  length(res[3])-x[res[1],Ebis[res[2]-1]])
+              @constraint(relaxed_modele, sum(y[r,Ebis[p[2]-1]] for r in p[3]) <=  length(p[3])-x[p[1],Ebis[p[2]-1]])
             end
         end
     end
