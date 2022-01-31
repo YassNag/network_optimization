@@ -1,0 +1,52 @@
+
+ --> Nombre total d'unités couvertes par la base: 130
+
+ --> Nombre total d'unités couvertes par les HAPS/nombre d'unité non couvertes par les bases: 791/891 (88.77%)
+
+ --> Nombre total d'unités couvertes/ nombre total d'unité: 921/1000 (92.1%)
+
+ - HAPS 1 déployé à la position (0.0, 300.0)
+
+     - Relais 2 (type 1) placé dans ce HAPS
+
+ - HAPS 2 déployé à la position (150.0, 600.0)
+
+     - Relais 12 (type 3) placé dans ce HAPS
+
+ - HAPS 3 déployé à la position (750.0, 150.0)
+
+     - Relais 9 (type 3) placé dans ce HAPS
+
+ - HAPS 4 déployé à la position (450.0, 600.0)
+
+     - Relais 10 (type 3) placé dans ce HAPS
+
+ - HAPS 5 déployé à la position (150.0, 150.0)
+
+     - Relais 4 (type 1) placé dans ce HAPS
+
+ - HAPS 6 déployé à la position (450.0, 900.0)
+
+     - Relais 7 (type 2) placé dans ce HAPS
+
+ - HAPS 7 déployé à la position (900.0, 600.0)
+
+     - Relais 3 (type 1) placé dans ce HAPS
+
+     - Relais 8 (type 2) placé dans ce HAPS
+
+ - HAPS 8 déployé à la position (750.0, 900.0)
+
+     - Relais 6 (type 2) placé dans ce HAPS
+
+ - HAPS 9 déployé à la position (300.0, 750.0)
+
+     - Relais 5 (type 2) placé dans ce HAPS
+
+ - HAPS 10 déployé à la position (900.0, 300.0)
+
+     - Relais 1 (type 1) placé dans ce HAPS
+
+     - Relais 11 (type 3) placé dans ce HAPS
+
+========== Affichage des résultats ==========

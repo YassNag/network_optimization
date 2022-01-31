@@ -5,37 +5,35 @@
   e. install cplex
   c. add julia to path https://julialang.org/downloads/platform/
 
+2. Tests Folder creation
+  The user should create a tests folder to test. Tests folders should be in /src/Expes.
+  Each test folder contains a file of resolution parameters named parametres_expes.txt. These parameters are
+  -  list of bibs to test
+  -  connectivity module flag
+  -  dominance inequalities flag
+  -  covering-connectivity inequalities flag
+  -  empty callback flag
+  -  covering ineqsualities flag
+  -  only on root separation flag
+  -  frequency of separation
+  -  exact separation
+  -  solver name
+  -  display resolution log flag
+  -  time limit
+
 2. Run the project
   a. Go to the root of the project folder "src"
   b. Run in julia the command line include("main.jl") at the root of the folder
-  c. Follow the instructions in order to configure the different options of the display, the model and the resolution.
-    Here is an example:
-      Choix de la bibliothèque d'instances:
-      --> Votre choix : 16
-      Choix du scénario :
-      --> Votre choix : 1
-      --> Souhaitez-vous afficher le contexte (o/n) ? n
-      --> Souhaitez-vous visualiser le scénario (o/n) ? n
-      --> Souhaitez-vous poursuivre vers la résolution (o/n) ? o
-      --> Souhaitez-vous désactiver les positions non-couvrantes (o/n) ? o
-      - Nombre de positions désactivées : 5/67 (7.46%)
-      --> Souhaitez-vous ajouter les contraintes de renforcement R1  (au plus un seul relais par type et par position): (o/n) ?
-      --> Souhaitez-vous ajouter les contraintes de renforcement R2 (pas de deploiement de HAPS --> Pas de placement de relais): (o/n) ? o
-      --> Souhaitez-vous ajouter les contraintes de dominance de positions (o/n) ? o
-      --> Souhaitez-vous ajouter les contraintes de couverture-connexité? o
-      --> Souhaitez-vous ajouter un callback vide ? n
-      --> Souhaitez-vous ajouter les contraintes de couverture (cover inequalities) ? o
-      --> Souhaitez-vous ajouter un ajout des inégalités de couverture uniquement à la racine ? o
-      --> Souhaitez-vous séparer les contraintes de couverture avec la méthode exacte ? n
-     la séparation sera effectuée avec la méthode heuristique.
-     nombre de couples de positions dominés: 15
-      - Nombre de variables : 133492
-      - Nombre de contraintes : 412664
-     ========== Création du modèle ==========
-      Choix du solveur...
-      --> Votre choix : 5
-      --> Souhaitez-vous obtenir les détails de la résolution (o/n) ? o
-      --> Souhaitez-vous fixer une limite de temps (o/n) ? n
+  c. Enter the name of the tests folder that you want to solve.
+
+3. Get results
+  The results of resolution for a given test folder will be stored on the csv file Expes/test_folder_name/Results/results.csv.
+  You can get the latex format of the csv table by using in a notebook style this commands:
+  using CSV
+  using DataFrames
+  df = DataFrame(CSV.File("Expes/test_folder_name/Results/results.csv"))
+  show(stdout, MIME("text/latex"),df)
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
