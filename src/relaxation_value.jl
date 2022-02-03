@@ -1,19 +1,56 @@
-function relaxation_value(relaxed_modele, instance, separation_exacte, callback_vide, only_on_root, connexity_module, expefolder)
+function relaxation_value(relaxed_modele, instance)
     println("solving the relaxation")
     set_optimizer(relaxed_modele, CPLEX.Optimizer)
     relax_integrality(relaxed_modele)
+    # # #disable cplex presolve options
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_PROBE", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_HEURFREQ", -1) #Turn off node heuristics
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_RINSHEUR", -1)  #Manual says, this is turned off if HEURFREQ is -1
+    # # set_optimizer_attribute(modele, "CPX_PARAM_CUTPASS", -1) # Make no passes attempting to generate cuts.
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_PREIND", 0) # Turn off presolve completely
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_AGGIND", 0) # Do NOT use any aggregator ideas
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_RELAXPREIND", 0) # Do NOT APPLY LP presolve routines to root node relaxation
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_PREPASS", 0) # dO NOt apply any presolve passes.
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_REPEATPRESOLVE", 0) # Do NOT repeat presolve after root node is otherwise processed.
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_BNDSTRENIND", 0) # Do not apply bound strengthening
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_COEREDIND", 0) # Disable coefficient reduction in presolving
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_CUTSFACTOR", 1) # 1 means, total number of constraints
+    # #should be same as original set…thus, no NEW cuts will be generated.
+    #
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_REDUCE", 0) # Do not apply any primal or dual reductions
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_MIPSEARCH", 1) # 1 means conventional
+    # # set_optimizer_attribute(modele, "CPX_PARAM_SUBMIPNODELIM", 0) # No submip nodes
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_MIPEMPHASIS", 3) # Do not waste time attempting to find feasible solutions
+    #
+    # #disable cplex cuts
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_CLIQUES", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_BQPCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_COVERS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_DISJCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_FLOWCOVERS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_FLOWPATHS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_FRACCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_GUBCOVERS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_ZEROHALFCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_MIRCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_IMPLBD", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_MIRCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_MCFCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_RLTCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_ZEROHALFCUTS", -1)
+    # set_optimizer_attribute(relaxed_modele, "CPX_PARAM_LANDPCUTS", -1)
 
     if separation_exacte==false && separation_heuristique==false
         optimize!(relaxed_modele)
         z2 = objective_value(relaxed_modele)
-        lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true, connexity_module, expefolder)
+        lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true)
         println("relxation solution: $z2")
     end
     if separation_exacte==true
-        z2=exact_cutting_plane(relaxed_modele, instance, connexity_module, expefolder)
+        z2=exact_cutting_plane(relaxed_modele, instance)
     end
     if separation_heuristique==true
-        z2=heuristic_cutting_plane(relaxed_modele, instance, connexity_module, expefolder)
+        z2=heuristic_cutting_plane(relaxed_modele, instance)
     end
     return z2
 end
@@ -202,7 +239,7 @@ function find_exact_cuts(x_vals, y_vals, pool, instance)
     return res # toutes les contraintes violée, contrainte violée localement
 end
 
-function exact_cutting_plane(relaxed_modele, instance, connexity_module, expefolder)
+function exact_cutting_plane(relaxed_modele, instance)
     is_over = false
     pool=[]
     y = relaxed_modele[:y]
@@ -221,22 +258,17 @@ function exact_cutting_plane(relaxed_modele, instance, connexity_module, expefol
         end
     end
    z2 = objective_value(relaxed_modele)
-   lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true, connexity_module, expefolder)
+   lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true)
    println("relxation solution: $z2")
    return z2
 end
 
 
-function heuristic_cutting_plane(relaxed_modele, instance, connexity_module, expefolder)
+function heuristic_cutting_plane(relaxed_modele, instance)
     is_over = false
     pool=[]
     y = relaxed_modele[:y]
     x = relaxed_modele[:x]
-    # nb_contraintes = 0
-    # for (F, S) in list_of_constraint_types(relaxed_modele)
-    #     nb_contraintes += num_constraints(relaxed_modele, F, S)
-    # end
-    # println("nb_contraintes before cutting plane: $nb_contraintes")
     while !is_over
         optimize!(relaxed_modele)
         x_vals = value.(relaxed_modele[:x])
@@ -251,7 +283,7 @@ function heuristic_cutting_plane(relaxed_modele, instance, connexity_module, exp
         end
     end
    z2 = objective_value(relaxed_modele)
-   lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true, connexity_module, expefolder)
+   lecture_resultats_modele(instance, E1, E2, relaxed_modele, Vertices, Arcs, Ebis, true)
    println("relxation solution: $z2")
    return z2
 end

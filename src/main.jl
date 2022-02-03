@@ -3,7 +3,6 @@
 # Système
 using Dates
 using Random
-using CSV
 
 # Affichage graphique
 using PyCall
@@ -22,7 +21,6 @@ using JuMP
 # Solveurs commerciaux
 #using Gurobi
 using CPLEX
-using DataFrames
 # using MosekTools
 
 #Graph library
@@ -48,35 +46,37 @@ function main()
     # Nettoyage de la console
     clear()
     ascii_art_pmcn()
-    # Lecture des bibliothèques d'instances
-    println("Saisissez le nom du répértoire des expérémentations souhaité: ")
-    expefolder = readline()
-    bibliotheques = lecture_bibliotheques(expefolder)
-    connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite =
-    lecture_parametres_resolution(expefolder)
-    # println("ajout_R3: $ajout_R3, ajout_R4: $ajout_R4, callback_vide: $callback_vide, ajout_R5: $ajout_R5, only_on_root: $only_on_root, frequency: $frequency, separation_exacte: $separation_exacte")
-    df=DataFrame(Bib=String[], Inst=String[], Var=Int[], Const=Int[], DomConst=Int[], CoverI=Int[], Nodes=Int[], Gap=Float64[], CPU=Float64[], Obj=Float64[], Opt=String[])
-    for bib in bibliotheques
-        println("bib: $bib")
-        liste_scenarios = readdir("bibliotheques_instances/"*bib*"/scenarios/")
-        for scenario in liste_scenarios
-            if scenario != ".DS_Store"
-                # try
-                    global ResultDict=Dict(:Bib=>"", :Inst=>"", :Var=>0, :Const=>0, :DomConst=>0, :CoverI=>0, :Nodes=>0, :Gap=>0, :CPU=>0, :Obj=>0,  :Opt=>"")
-                    global ResultDict[:Bib]=bib
-                    global ResultDict[:Inst]=scenario
-                    println("scenario: $scenario")
-                    instance = lecture_instance(bib,scenario)
-                    solution = resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite, expefolder)
-                    push!(df, ResultDict)
-                    CSV.write("Expes/"*expefolder*"/Results/IntResults.csv", df)
-                # catch
-                #     break
-                # end
+
+    # Choix de l'instance
+    instance = lecture_instance()
+
+    # Affichage du contexte
+    choix = choix_binaire("\n --> Souhaitez-vous afficher le contexte (o/n) ? ")
+    if choix == "o"
+        affichage_contexte(instance)
+    end
+
+    # Visualisation du scenario
+    choix = choix_binaire("\n --> Souhaitez-vous visualiser le scénario (o/n) ? ")
+    if choix == "o"
+        visualisation_scenario(instance)
+    end
+
+    # Poursuivre vers la résolution
+    choix = choix_binaire("\n --> Souhaitez-vous poursuivre vers la résolution (o/n) ? ")
+    if choix == "o"
+        # Résolution de l'instance
+        solution = resolution_modele(instance)
+
+        # Visualisation de la solution
+        if solution.statut == 1
+            choix = choix_binaire("\n --> Souhaitez-vous visualiser la solution (o/n) ? ")
+            if choix == "o"
+                visualisation(instance, solution)
             end
         end
     end
-    CSV.write("Expes/"*expefolder*"/Results/results.csv", df)
+    # Fin
     ascii_art_fin()
 end
 

@@ -13,12 +13,7 @@ include("controles_saisies.jl")
 function generation_contexte()
     # Nettoyage de la console
     clear()
-    println("Saisissez le nom du répertoire de la bibliothèque d'instances à générer: ")
-    expefolder = readline()
-    lignes = Vector{String}
-    open("./../bibliotheques_instances/"*expefolder*"/contexte_parameters.txt") do fichier
-        lignes = readlines(fichier)
-    end
+
     println("\n========== Générateur de contexte ==========")
     contexte = ""
     doc = "" # Documentation de l'instance en cours de génération
@@ -26,71 +21,84 @@ function generation_contexte()
     doc *= "========== Documentation =========="
 
     docTemp = "\n --> Nombre d'états : "
-    # print(docTemp)
-    nT = lignes[2]
-    # println(nT)
+    print(docTemp)
+    nT = readline()
     doc *= "\n" * docTemp * nT
     contexte *= "// Nombre d'états (#T), de HAPS (#H), de positions envisageables pour le déploiement (#E) de types de communication (#C), d'unités (#U) et de bases (#B)\n"
     contexte *= nT * ", "
 
     docTemp = "\n --> Nombre de HAPS : "
-    # print(docTemp)
-    nH = lignes[2]
+    print(docTemp)
+    nH = readline()
     doc *= "\n" * docTemp * nH
     contexte *= nH * ", "
     nH = parse(Int, nH)
 
-    println("\n    - Quadrillage (1000 * 1000)")
-    # print("       --> Pas : ")
-    pas = parse(Int, lignes[8])
-    X = [0:pas:1000;]; Y = [0:pas:1000;]
-    E = [(x,y) for x in X, y in Y]
-    nE = length(E)
-    docTemp = "\n --> Nombre de positions envisageables pour le déploiement d'un HAPS : $nE (quadrillage, pas : $pas)"
-    # println(docTemp)
-    doc *= "\n" * docTemp
-    contexte *= string(nE) * ", "
+    choix_quadrillage = choix_binaire("\n --> Souhaitez-vous générer un quadrillage pour les positions de déploiement (o/n) ? ")
+    if choix_quadrillage == "o"
+        println("\n    - Quadrillage (1000 * 1000)")
+        print("       --> Pas : ")
+        pas = parse(Int, readline())
+        X = [0:pas:1000;]; Y = [0:pas:1000;]
+        E = [(x,y) for x in X, y in Y]
+        nE = length(E)
+        docTemp = "\n --> Nombre de positions envisageables pour le déploiement d'un HAPS : $nE (quadrillage, pas : $pas)"
+        println(docTemp)
+        doc *= "\n" * docTemp
+        contexte *= string(nE) * ", "
+    elseif choix_quadrillage == "n"
+        docTemp = "\n --> Nombre de positions envisageables pour le déploiement d'un HAPS : "
+        print(docTemp)
+        nE = readline()
+        doc *= "\n" * docTemp * nE
+        contexte *= nE * ", "
+        nE = parse(Int, nE)
+    end
 
     docTemp = "\n --> Nombre de types de communication : "
-    # print(docTemp)
-    nC = lignes[11]
+    print(docTemp)
+    nC = readline()
     doc *= "\n" * docTemp * nC
     contexte *= nC * ", "
     nC = parse(Int, nC)
 
     docTemp = "\n --> Nombre d'unités : "
-    # print(docTemp)
-    nU = lignes[14]
+    print(docTemp)
+    nU = readline()
     doc *= "\n" * docTemp * nU
     contexte *= nU * ", "
     nU = parse(Int, nU)
 
     docTemp = "\n --> Nombre de bases : "
-    # print(docTemp)
-    nB = lignes[17]
+    print(docTemp)
+    nB = readline()
     doc *= "\n" * docTemp * nB
     contexte *= nB * "\n\n"
     nB = parse(Int, nB)
 
     contexte *= "// Altitude de déploiement des HAPS (A)\n"
     docTemp = "\n --> Altitude de déploiement des HAPS : "
-    # print(docTemp)
-    A = lignes[20]
+    print(docTemp)
+    A = readline()
     doc *= "\n" * docTemp * A
     contexte *= A * "\n\n"
 
     nRc = []
     contexte *= "// Nombre de relais par type de communication (R_1, R_2, ...)\n"
-    a=parse(Int,lignes[23])
-    b=parse(Int,lignes[24])
+    choix, a, b = choix_saisie("\n --> Souhaitez-vous saisir manuellement le nombre de relais par type de communication (o/n) ? ")
     for c in 1:nC
         docTemp = "\n --> Nombre de relais de type $c : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
-        val = rand(a:b)
-        # println("$val")
-        val = string(val)
-        doc *= val
+        if choix == "o"
+            val = readline()
+            doc *= val
+        elseif choix == "n"
+            val = rand(a:b)
+            println("$val")
+            val = string(val)
+            doc *= val
+        end
         if c != nC
             contexte *= val * ", "
         else
@@ -101,30 +109,57 @@ function generation_contexte()
     contexte *= "\n"
 
     contexte *= "// Types de communication de chaque unité (C_u)\n"
-    a=parse(Int,lignes[27])
-    b=parse(Int,lignes[28])
+    choix, a, b = choix_saisie("\n --> Souhaitez-vous saisir manuellement les types de communication de chaque unité (o/n) ? ")
     CU = Vector{Vector{Int}}(undef, nU)
     for u in 1:nU
         CU[u]=Int[]
-        docTemp = "\n --> Types de communication de l'unité $u : "
-        # print(docTemp)
-        doc *= "\n" * docTemp
-        nCu = rand([a:b;])
-        Cu = shuffle(1:nC)[1:nCu]
-        cpt = 1
-        for Cu_i in Cu
-            if cpt != nCu
-                # print("$(Cu_i), ")
-                doc *= string(Cu_i) * ", "
-                contexte *= string(Cu_i) * ", "
-                push!(CU[u], Cu_i)
-            else
-                # println("$(Cu_i)")
-                doc *= string(Cu_i)
-                contexte *= string(Cu_i) * "\n"
-                push!(CU[u], Cu_i)
+        if choix == "o"
+            docTemp = "\n - Unité $u : "
+            println(docTemp)
+            doc *= "\n" * docTemp
+            docTemp = "   --> Nombre de types de communication : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            nCu = parse(Int, readline())
+            docTemp *= string(nCu)
+            reste = [1:nCu;]
+            for c in 1:nCu
+                println("      Types restants : $reste")
+                docTemp = "      --> Type $c : "
+                print(docTemp)
+                doc *= "\n" * docTemp
+                Cu_i = readline()
+                filter!(el->el!=parse(Int, Cu_i),reste)
+                doc *= Cu_i
+                if c != nCu
+                    contexte *= Cu_i * ", "
+                    push!(CU[u], Cu_i)
+                else
+                    contexte *= Cu_i * "\n"
+                    push!(CU[u], Cu_i)
+                end
             end
-            cpt += 1
+        elseif choix == "n"
+            docTemp = "\n --> Types de communication de l'unité $u : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            nCu = rand([a:b;])
+            Cu = shuffle(1:nC)[1:nCu]
+            cpt = 1
+            for Cu_i in Cu
+                if cpt != nCu
+                    print("$(Cu_i), ")
+                    doc *= string(Cu_i) * ", "
+                    contexte *= string(Cu_i) * ", "
+                    push!(CU[u], Cu_i)
+                else
+                    println("$(Cu_i)")
+                    doc *= string(Cu_i)
+                    contexte *= string(Cu_i) * "\n"
+                    push!(CU[u], Cu_i)
+                end
+                cpt += 1
+            end
         end
     end
 
@@ -133,18 +168,22 @@ function generation_contexte()
 
     contexte *= "// Portée de chaque unité par type de communication (P_u)\n"
 
-    a_portee=parse(Int,lignes[31])
-    b_portee = parse(Int,lignes[32])
+    choix_portee, a_portee, b_portee = choix_saisie("\n --> Souhaitez-vous saisir manuellement la portée de communication de chaque unité (o/n) ? ")
     for u in 1:nU
         docTemp = "      --> Portée unité (seuil) : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
         cpt=1
         for c in CU[u]
-            s = rand(a_portee:b_portee)
-            # println("$s")
-            s = string(s)
-            doc *= s
+            if choix_portee == "o"
+                s = readline()
+                doc *= s
+            elseif choix_portee == "n"
+                s = rand(a_portee:b_portee)
+                println("$s")
+                s = string(s)
+                doc *= s
+            end
             if cpt != length(CU[u])
                 contexte *= s * ", "
             else
@@ -154,114 +193,226 @@ function generation_contexte()
         end
     end
 
+
     contexte *= "\n"
 
     contexte *= "// Types de communication de chaque base (C_b)\n"
-    nCb = nC
-    com=""
-    for i in 1:nC-1
-        com=com*string(i)*", "
+    choix, a, b = choix_saisie("\n --> Souhaitez-vous saisir manuellement les types de communication de chaque base (o/n) ? ")
+    for base in 1:nB
+        if choix == "o"
+            docTemp = "\n - Base $base : "
+            println(docTemp)
+            doc *= "\n" * docTemp
+            docTemp = "   --> Nombre de types de communication : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            nCb = parse(Int, readline())
+            docTemp *= string(nCb)
+            reste = [1:nCb;]
+            for c in 1:nCb
+                println("      Types restants : $reste")
+                docTemp = "      --> Type $c : "
+                print(docTemp)
+                doc *= "\n" * docTemp
+                Cb_i = readline()
+                filter!(el->el!=parse(Int, Cb_i),reste)
+                doc *= Cb_i
+                if c != nCb
+                    contexte *= Cb_i * ", "
+                else
+                    contexte *= Cb_i * "\n"
+                end
+            end
+        elseif choix == "n"
+            docTemp = "\n --> Types de communication de la base $base : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            nCb = rand([a:b;])
+            Cb = shuffle(1:nC)[1:nCb]
+            cpt = 1
+            for Cb_i in Cb
+                if cpt != nCb
+                    print("$(Cb_i), ")
+                    doc *= string(Cb_i) * ", "
+                    contexte *= string(Cb_i) * ", "
+                else
+                    println("$(Cb_i)")
+                    doc *= string(Cb_i)
+                    contexte *= string(Cb_i) * "\n"
+                end
+                cpt += 1
+            end
+        end
     end
-    com=com*string(nC)* "\n"
-    contexte *=com* "\n"
+    contexte *= "\n"
 
     contexte *= "// Positions des bases (x_b, y_b)\n"
+    choix, a, b = choix_saisie("\n --> Souhaitez-vous saisir manuellement les positions des bases (o/n) ? ")
     for base in 1:nB
         docTemp = "\n - Base $base : "
-        # println(docTemp)
+        println(docTemp)
         doc *= "\n" * docTemp
         docTemp = "   --> x : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
-        x = lignes[35]
-        doc *= x
+        if choix == "o"
+            x = readline()
+            doc *= x
+        elseif choix == "n"
+            x = rand(a:b)
+            println("$x")
+            x = string(x)
+            doc *= x
+        end
         docTemp = "   --> y : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
-        y = lignes[36]
-        doc *= y
+        if choix == "o"
+            y = readline()
+            doc *= y
+        elseif choix == "n"
+            y = rand(a:b)
+            println("$y")
+            y = string(y)
+            doc *= y
+        end
         contexte *= x * ", " * y * "\n"
     end
     contexte *= "\n"
 
     contexte *= "// Positions envisageables pour le déploiement d'un HAPS (x_e, y_e)\n"
-    cpt = 1
-    for (x,y) in E
-        docTemp = "\n - Position $cpt : "
-        doc *= "\n" * docTemp
-        docTemp = "   --> x : $x"
-        doc *= "\n" * docTemp
-        docTemp = "   --> y : $y"
-        doc *= "\n" * docTemp
-        contexte *= string(x) * ", " * string(y) * "\n"
-        cpt += 1
+    if choix_quadrillage == "o"
+        cpt = 1
+        for (x,y) in E
+            docTemp = "\n - Position $cpt : "
+            doc *= "\n" * docTemp
+            docTemp = "   --> x : $x"
+            doc *= "\n" * docTemp
+            docTemp = "   --> y : $y"
+            doc *= "\n" * docTemp
+            contexte *= string(x) * ", " * string(y) * "\n"
+            cpt += 1
+        end
+        contexte *= "\n"
+    elseif choix_quadrillage == "n"
+        choix, a, b = choix_saisie("\n --> Souhaitez-vous saisir manuellement les positions enviseables pour le déploiement des HAPS (o/n) ? ")
+        for position in 1:nE
+            docTemp = "\n - Position $position : "
+            println(docTemp)
+            doc *= "\n" * docTemp
+            docTemp = "   --> x : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            if choix == "o"
+                x = readline()
+                doc *= x
+            elseif choix == "n"
+                x = rand(a:b)
+                println("$x")
+                x = string(x)
+                doc *= x
+            end
+            docTemp = "   --> y : "
+            print(docTemp)
+            doc *= "\n" * docTemp
+            if choix == "o"
+                y = readline()
+                doc *= y
+            elseif choix == "n"
+                y = rand(a:b)
+                println("$y")
+                y = string(y)
+                doc *= y
+            end
+            contexte *= x * ", " * y * "\n"
+        end
+        contexte *= "\n"
     end
-    contexte *= "\n"
 
     contexte *= "// Poids et puissance maximale de chacun des HAPS (W_h, P_h)\n"
-    a_poids = parse(Int, lignes[39])
-    b_poids = parse(Int, lignes[40])
-    a_puissance = parse(Int, lignes[43])
-    b_puissance = parse(Int, lignes[44])
+    choix_poids, a_poids, b_poids = choix_saisie("\n --> Souhaitez-vous saisir manuellement les poids maximales de chacun des HAPS (o/n) ? ")
+    choix_puissance, a_puissance, b_puissance = choix_saisie("\n --> Souhaitez-vous saisir manuellement les puissances maximales de chacun des HAPS (o/n) ? ")
     for h in 1:nH
         docTemp = "\n - HAPS $h : "
-        # println(docTemp)
+        println(docTemp)
         doc *= "\n" * docTemp
         docTemp = "   --> Poids maximal : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
-        W = rand(a_poids:b_poids)
-        # println("$W")
-        W = string(W)
-        doc *= W
+        if choix_poids == "o"
+            W = readline()
+            doc *= W
+        elseif choix_poids == "n"
+            W = rand(a_poids:b_poids)
+            println("$W")
+            W = string(W)
+            doc *= W
+        end
         docTemp = "   --> Puissance maximale : "
-        # print(docTemp)
+        print(docTemp)
         doc *= "\n" * docTemp
-        P = rand(a_puissance:b_puissance)
-        # println("$P")
-        P = string(P)
-        doc *= P
+        if choix_puissance == "o"
+            P = readline()
+            doc *= P
+        elseif choix_puissance == "n"
+            P = rand(a_puissance:b_puissance)
+            println("$P")
+            P = string(P)
+            doc *= P
+        end
         contexte *= W * ", " * P * "\n"
     end
     contexte *= "\n"
 
-    a_poids = parse(Int, lignes[47])
-    b_poids = parse(Int, lignes[48])
-    a_puissance = parse(Int, lignes[51])
-    b_puissance = parse(Int, lignes[52])
-    a_portee = parse(Int, lignes[55])
-    b_portee = parse(Int, lignes[56])
+    choix_poids, a_poids, b_poids = choix_saisie("\n --> Souhaitez-vous saisir manuellement les poids de chacun des relais (o/n) ? ")
+    choix_puissance, a_puissance, b_puissance = choix_saisie("\n --> Souhaitez-vous saisir manuellement les puissances de chacun des relais (o/n) ? ")
+    choix_portee, a_portee, b_portee = choix_saisie("\n --> Souhaitez-vous saisir manuellement les portées (seuils) de chacun des relais (o/n) ? ")
     cpt = 1
     for c in 1:nC
         contexte *= "// Poids, puissance et portée de chacun des relais de type $c (w_r, p_r, s_r)\n"
         docTemp = "\n - Relais de type $c"
-        # println(docTemp)
+        println(docTemp)
         doc *= "\n" * docTemp
         for r in 1:nRc[c]
             docTemp = "\n   - Relais $cpt : "
-            # println(docTemp)
+            println(docTemp)
             doc *= "\n" * docTemp
             docTemp = "      --> Poids : "
-            # print(docTemp)
+            print(docTemp)
             doc *= "\n" * docTemp
-            w = rand(a_poids:b_poids)
-            # println("$w")
-            w = string(w)
-            doc *= w
+            if choix_poids == "o"
+                w = readline()
+                doc *= w
+            elseif choix_poids == "n"
+                w = rand(a_poids:b_poids)
+                println("$w")
+                w = string(w)
+                doc *= w
+            end
             docTemp = "      --> Puissance : "
-            # print(docTemp)
+            print(docTemp)
             doc *= "\n" * docTemp
-            p = rand(a_puissance:b_puissance)
-            # println("$p")
-            p = string(p)
-            doc *= p
+            if choix_puissance == "o"
+                p = readline()
+                doc *= p
+            elseif choix_puissance == "n"
+                p = rand(a_puissance:b_puissance)
+                println("$p")
+                p = string(p)
+                doc *= p
+            end
             docTemp = "      --> Portée (seuil) : "
-            # print(docTemp)
+            print(docTemp)
             doc *= "\n" * docTemp
-            s = rand(a_portee:b_portee)
-            # println("$s")
-            s = string(s)
-            doc *= s
+            if choix_portee == "o"
+                s = readline()
+                doc *= p
+            elseif choix_portee == "n"
+                s = rand(a_portee:b_portee)
+                println("$s")
+                s = string(s)
+                doc *= s
+            end
             cpt += 1
             contexte *= w * ", " * p * ", " * s * "\n"
         end
@@ -272,92 +423,17 @@ function generation_contexte()
     doc *= "\n\n========== Documentation ==========\n"
 
     nom_dossier = string(today())*"_"*Dates.format(now(), "HH:MM:SS")
-    # run(`mkdir contextes/$(nom_dossier)`)
-    context_path="./../bibliotheques_instances/"*expefolder*"/contexte.dat"
-    open("./../bibliotheques_instances/"*expefolder*"/contexte.dat", "w") do fichier
+    run(`mkdir contextes/$(nom_dossier)`)
+    open("contextes/$(nom_dossier)/contexte.dat", "w") do fichier
         write(fichier, contexte)
     end
 
-    open("./../bibliotheques_instances/"*expefolder*"/documentation", "w") do fichier
+    open("contextes/$(nom_dossier)/documentation", "w") do fichier
         write(fichier, doc)
     end
 
     println("\n /!\\ Le contexte est disponible dans le dossier \"contextes/$(nom_dossier)/\" /!\\ ")
     println("\n========== Générateur de contexte ==========")
-
-    println("\n========== Générateur de scénarios ==========")
-    pas = parse(Float64, lignes[59])
-    nb_scenarios = parse(Int, lignes[62])
-    nom_dossier = "./../bibliotheques_instances/"*expefolder*"/scenarios"
-    try
-        run(`mkdir $(nom_dossier)`)
-    catch
-    end 
-
-    nT, nU = lecture_depuis_fichier(context_path)
-    for i in 1:nb_scenarios
-        print("\n - Scénario $i : ")
-        scenario = scenario_aleatoire(nT, nU, pas)
-        println(" OK")
-        ecrire_scenario(nom_dossier, scenario, i)
-    end
-
-    println("\n /!\\ Les différents scénarios sont disponibles dans le dossier \"scenarios/$(nom_dossier)/\" /!\\ ")
-    println("\n========== Générateur de scénarios ==========")
-
 end
-
-
-
-function lecture_depuis_fichier(context_path)
-    lignes = Vector{String}
-    open(context_path) do fichier
-        lignes = readlines(fichier)
-    end
-
-    nT, _, _, _, nU = parse.(Int, split(lignes[2], ","))
-    return nT, nU
-end
-
-function scenario_aleatoire(nT, nU, pas)
-    directions = [("O",1), ("NO",2), ("N",3), ("NE",4), ("E",5), ("SE",6), ("S",7), ("SO",8)] # Points cardinaux élémentaires
-    correspondance = [(-pas, 0),  (-pas, pas), (0, pas), (pas, pas), (pas, 0), (pas, -pas), (0, -pas), (-pas, -pas)] # Correspondance entre direction et déplacement de l'unité sur le plan
-    #liste_deplacements = Vector{Vector{Tuple}}(undef, sum(nUc))
-    scenario = ""
-    for u in 1:nU
-        # Une unité
-        scenario *= "// Déplacements de l'unité terrestre $u sur un horizon temporel (x_$u^t, y_$u^t) \n"
-        liste_deplacements_unite = Vector{Tuple}(undef, nT)
-        point = (rand(pas:pas:1000-pas), rand(pas:pas:1000-pas))
-        liste_deplacements_unite[1] = point # Point de départ de l'unité (sur une position multiple de "pas")
-        scenario *= "(" * string(point[1]) * "," * string(point[2]) * "), "
-        for t in 2:nT
-            # Un état particulier
-            deplacement_valide = false
-            nouvelle_coord = ()
-            while !(deplacement_valide)
-                direction = rand(directions)
-                nouvelle_coord = liste_deplacements_unite[t-1] .+ correspondance[direction[2]]
-                if (nouvelle_coord[1] >= pas && nouvelle_coord[1] <= 1000-pas) && (nouvelle_coord[2] >= pas && nouvelle_coord[2] <= 1000-pas) # On reste dans la boîte définie (avec une protection pour éviter d'être sur les bords)
-                    deplacement_valide = true
-                end
-            end
-            liste_deplacements_unite[t] = nouvelle_coord
-            scenario *= "(" * string(nouvelle_coord[1]) * "," * string(nouvelle_coord[2])
-            if t != nT
-                scenario *= "), "
-            end
-        end
-        scenario *= ")\n\n"
-    end
-    return scenario
-end
-
-function ecrire_scenario(nom_dossier, scenario, i)
-    open("$(nom_dossier)/scenario_$i.dat", "w") do fichier
-           write(fichier, scenario)
-    end
-end
-
 
 generation_contexte()

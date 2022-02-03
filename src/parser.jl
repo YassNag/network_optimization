@@ -1,13 +1,16 @@
 
 ########## Lecture d'une instance ##########
 
-function lecture_instance(bib, scenario)
+function lecture_instance()
+    bibliotheque = choix_bibliotheque()
+
     # Lecture du contexte
-    chemin_contexte = "bibliotheques_instances/"*bib*"/contexte.dat"
+    chemin_contexte = "bibliotheques_instances/"*bibliotheque*"/contexte.dat"
     contexte = lire_contexte(chemin_contexte)
 
     # Lecture du scénario
-    chemin_scenario = "bibliotheques_instances/"*bib*"/scenarios/"*scenario
+    scenario = choix_scenario(bibliotheque)
+    chemin_scenario = "bibliotheques_instances/"*bibliotheque*"/scenarios/"*scenario
     scenario = lire_scenario(chemin_scenario, contexte)
 
     # Création de l'instance
@@ -16,36 +19,32 @@ function lecture_instance(bib, scenario)
     return instance
 end
 
-function lecture_bibliotheques(expefolder)
-    #lecture des nom de bibliothèques à résoudre
-    lignes = Vector{String}
-    open("Expes/"*expefolder*"/parametres_expes.txt") do fichier
-        lignes = readlines(fichier)
+function choix_bibliotheque()
+    # Choix d'une bibliothèque d'instances
+    liste_bibliotheques = readdir("bibliotheques_instances/")
+    println("\n Choix de la bibliothèque d'instances : ")
+    println(" -------------------------------------- ")
+    for i in 1:length(liste_bibliotheques)
+        println("     $i) $(liste_bibliotheques[i])")
     end
-    bibliotheques = [bib for bib in split(lignes[2], ", ")] # nRc[c] : nombre de relais de type c
-    return bibliotheques
+    choix = choix_multiple("\n --> Votre choix : ", length(liste_bibliotheques))
+    bibliotheque = liste_bibliotheques[choix]
+    return bibliotheque
 end
 
-
-function lecture_parametres_resolution(expefolder)
-    lignes = Vector{String}
-    open("Expes/"*expefolder*"/parametres_expes.txt") do fichier
-        lignes = readlines(fichier)
+function choix_scenario(bibliotheque)
+    # Choix d'un scénario
+    liste_scenarios = readdir("bibliotheques_instances/"*bibliotheque*"/scenarios/")
+    println("\n Choix du scénario : ")
+    println(" ------------------- ")
+    for i in 1:length(liste_scenarios)
+        println("     $i) $(liste_scenarios[i])")
     end
-    connexity_module =  lignes[5] == "yes" ? true : false
-    ajout_R3 = lignes[8] == "yes" ? true : false
-    ajout_R4 = lignes[11] == "yes" ? true : false
-    callback_vide  = lignes[14] == "yes" ? true : false
-    ajout_R5  = lignes[17] == "yes" ? true : false
-    only_on_root = lignes[20] == "yes" ? true : false
-    frequency =  parse.(Int64, lignes[23])
-    separation_exacte = lignes[26] == "yes" ? true : false
-    solver = lignes[29]
-    display_log = lignes[32]
-    temps_limite =  parse.(Int64, lignes[35])
-
-    return connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite
+    choix = choix_multiple("\n --> Votre choix : ", length(liste_scenarios))
+    scenario = liste_scenarios[choix]
+    return scenario
 end
+
 ########## Lecture (parsing) du contexte ##########
 
 function lire_contexte(chemin)
