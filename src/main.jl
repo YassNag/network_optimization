@@ -55,22 +55,24 @@ function main()
     connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite =
     lecture_parametres_resolution(expefolder)
     # println("ajout_R3: $ajout_R3, ajout_R4: $ajout_R4, callback_vide: $callback_vide, ajout_R5: $ajout_R5, only_on_root: $only_on_root, frequency: $frequency, separation_exacte: $separation_exacte")
-    df=DataFrame(Bib=String[], Inst=String[], Var=Int[], Const=Int[], DomConst=Int[], CoverI=Int[], Nodes=Int[], Gap=Float64[], CPU=Float64[])
+    df=DataFrame(Bib=String[], Inst=String[], Var=Int[], Const=Int[], DomConst=Int[], CoverI=Int[], Nodes=Int[], Gap=Float64[], CPU=Float64[], Obj=Float64[], Opt=String[])
     for bib in bibliotheques
         println("bib: $bib")
         liste_scenarios = readdir("bibliotheques_instances/"*bib*"/scenarios/")
         for scenario in liste_scenarios
-            try
-                ResultDict=Dict(:Bib=>"", :Inst=>"", :Var=>0, :Const=>0, :DomConst=>0, :CoverI=>0, :Nodes=>0, :Gap=>0, :CPU=>0)
-                ResultDict[:Bib]=bib
-                ResultDict[:Inst]=scenario
-                println("scenario: $scenario")
-                instance = lecture_instance(bib,scenario)
-                solution = resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite, ResultDict, expefolder)
-                push!(df, ResultDict)
-                CSV.write("Expes/"*expefolder*"/Results/IntResults.csv", df)
-            catch
-                break
+            if scenario != ".DS_Store"
+                # try
+                    global ResultDict=Dict(:Bib=>"", :Inst=>"", :Var=>0, :Const=>0, :DomConst=>0, :CoverI=>0, :Nodes=>0, :Gap=>0, :CPU=>0, :Obj=>0,  :Opt=>"")
+                    global ResultDict[:Bib]=bib
+                    global ResultDict[:Inst]=scenario
+                    println("scenario: $scenario")
+                    instance = lecture_instance(bib,scenario)
+                    solution = resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite, expefolder)
+                    push!(df, ResultDict)
+                    CSV.write("Expes/"*expefolder*"/Results/IntResults.csv", df)
+                # catch
+                #     break
+                # end
             end
         end
     end

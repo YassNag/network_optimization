@@ -2,7 +2,7 @@ include("preprocessing_functions.jl")
 include("resultat.jl")
 include("relaxation_value.jl")
 
-function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite, ResultDict, expefolder)
+function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callback_vide, ajout_R5, only_on_root, frequency, separation_exacte, solver, display_log, temps_limite, expefolder)
     global epsilone=0.1
     global nT = instance.contexte.nT
     global nH = instance.contexte.nH
@@ -69,7 +69,7 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
     end
     relaxed=false
     temp_creation_modele = @elapsed modele = creation_modele(instance, E1, E2, E4, ajout_R1, ajout_R2, connexity_module, ajout_R3, ajout_R4, ajout_R5, relaxed,
-    separation_exacte, callback_vide, only_on_root, frequency, solver, display_log, temps_limite, ResultDict, expefolder)
+    separation_exacte, callback_vide, only_on_root, frequency, solver, display_log, temps_limite, expefolder)
 
 
     println("\n - Nombre de variables : ", num_variables(modele))
@@ -79,8 +79,8 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
     end
     println("\n - Nombre de contraintes : ", nb_contraintes)
 
-    ResultDict[:Var]=num_variables(modele)
-    ResultDict[:Const]=nb_contraintes
+    global ResultDict[:Var]=num_variables(modele)
+    global ResultDict[:Const]=nb_contraintes
 
     println("\n========== Création du modèle ==========")
 
@@ -114,7 +114,7 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
     #Solving the relaxation
     relaxed=true
     relaxed_modele = creation_modele(instance, E1, E2, E4, ajout_R1, ajout_R2, connexity_module, ajout_R3, ajout_R4,ajout_R5, relaxed, separation_exacte,
-    callback_vide, only_on_root, frequency, solver, display_log, temps_limite, ResultDict, expefolder)
+    callback_vide, only_on_root, frequency, solver, display_log, temps_limite, expefolder)
     z2= relaxation_value(relaxed_modele, instance, separation_exacte, callback_vide, only_on_root, connexity_module, expefolder)
     relaxed=false
 
@@ -131,7 +131,7 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
     # Affichage des temps
     precision = 4 # Précision des résultats (nombre de décimales)
     temps_resolution = solve_time(modele)
-    ResultDict[:CPU]=round(temps_resolution, digits=2)
+    global ResultDict[:CPU]=round(temps_resolution, digits=2)
     println("\n\n========== Affichage des temps ==========")
     println("\n - Temps suppression de positions non couvrantes : $(trunc(temps_pretraitement_positions, digits=precision)) seconde(s)")
     println("\n - Temps pré-calcul E1 (ensemble des positions à portée de l'unité u de type c pour le relais r): $(trunc(temps_precalcul_unites, digits=precision)) seconde(s)")
@@ -144,15 +144,19 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
 
     if termination_status(modele) == MOI.INFEASIBLE
         println("\n - Échec : problème non réalisable")
+        global ResultDict[:Opt]="infeasible"
         statut = 0
     elseif termination_status(modele) == MOI.OPTIMAL # Solution optimale
         println("\n - Solution optimale trouvée")
+        global ResultDict[:Opt]="yes"
         statut = 1
     elseif termination_status(modele) == MOI.TIME_LIMIT && has_values(modele) # Temps limite atteint mais solution réalisable sous-optimale disponible
         println("\n - Solution réalisable (possiblement sous-optimale) trouvée dans le temps imparti")
+        global ResultDict[:Opt]="time limit with solution"
         statut = 1
     elseif termination_status(modele) == MOI.TIME_LIMIT # Temps limite atteint et pas de solution
         println("\n - Échec : temps limite de résolution atteint (> $(temps_limite/(10^3)) seconde(s)) ")
+        global ResultDict[:Opt]="time limit no solution"
         statut = 0
     elseif termination_status(modele) == MOI.NODE_LIMIT
             println("\n -  : arret noeud 0 objective")
@@ -180,20 +184,21 @@ function resolution_modele(instance, connexity_module, ajout_R3, ajout_R4, callb
         Gap=0
     else
         println("solopt: $z1")
+        global ResultDict[:Obj]=z1
         println("solFractionnaire: $z2")
         Gap= ((z2-z1)/z1)*100
     end
 
      println("Gap: $Gap")
-     ResultDict[:Gap]=round(Gap, digits=2)
+     global ResultDict[:Gap]=round(Gap, digits=2)
      if separation_exacte==true || separation_heuristique ==true
          println("nbre d'inégalité de couverture ajoutés: $nb_const")
-         ResultDict[:CoverI]=nb_const
+         global ResultDict[:CoverI]=nb_const
      end
 
      number_of_nodes=MOI.get(modele, MOI.NodeCount())
      println("Number of nodes in the B&C tree : $number_of_nodes")
-     ResultDict[:Nodes]=number_of_nodes
+     global ResultDict[:Nodes]=number_of_nodes
 
     #solve the relaxation
     return solution
@@ -202,7 +207,7 @@ end
 
 
 function creation_modele(instance, E1, E2, E4, ajout_R1, ajout_R2, connexity_module, ajout_R3, ajout_R4, ajout_R5, relaxed, separation_exacte,
-    callback_vide, only_on_root, frequency, solver, display_log, temps_limite, ResultDict, expefolder)
+    callback_vide, only_on_root, frequency, solver, display_log, temps_limite, expefolder)
     # Initialisation du modèle
     modele = Model()
     Ebis = Int[] # On cherche les positions actives (sous-ensemble de positions)
@@ -394,7 +399,7 @@ function creation_modele(instance, E1, E2, E4, ajout_R1, ajout_R2, connexity_mod
             Ve=dominant_positions(instance, Vertices, Ebis, E3, E1, U)
             Lve=length(Ve)
             println("nombre de couples de positions dominés: $Lve")
-            ResultDict[:DomConst]=Lve
+            global ResultDict[:DomConst]=Lve
 
             @constraint(modele, c_domxx[v in Ve,  h in 1:nH], x[h,Ebis[v[1]-1]] <=sum(y[r1,Ebis[v[2]-1]]  for r1 in 1:nR))
         end

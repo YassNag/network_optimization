@@ -1,5 +1,5 @@
 \\bibliothèques d'instances: list of bibs to test
-0
+0, petite_instance
 
 \\Ajout de la composante connexité (yes/no)
 yes
@@ -17,13 +17,13 @@ no
 yes
 
 \\séparation uniquement à la racine (yes/no)
-yes
+no
 
 \\fréquence de séparation (int)
-100
+1000
 
 \\séparation exacte (yes/no)
-yes
+no
 
 \\Solver: choose in this list ["GLPK", "Cbc", "Mosek", "CPLEX", "Gurobi", "SCIP"]
 CPLEX

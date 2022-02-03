@@ -1,0 +1,62 @@
+\\Nombre d'états
+10
+
+\\Nombre de HAPS
+5
+
+\\pas de quadrillage
+180
+
+\\Nombre de types de communication
+3
+
+\\Nombre d'unité
+5
+
+\\Nombre de base
+1
+
+\\ Altitude de déploiement des HAPS :
+20
+
+\\Tirage uniforme entre [a,b] pour le nombre de relais par type de communication:
+1
+5
+
+\\Tirage uniforme entre [a,b] pour les types de communication de chaque unité
+1
+3
+
+\\Tirage uniforme entre [a,b] pour la portée de communication de chaque unité
+100
+200
+
+\\ positions des bases (x,y)
+500
+500
+
+\\Tirage uniforme entre [a,b] pour les poids maximales de chacun des HAPS
+100
+300
+
+\\Tirage uniforme entre [a,b] pour les puissances maximales de chacun des HAPS
+100
+300
+
+\\Tirage uniforme entre [a,b] pour les poids maximales de chacun des relais
+100
+300
+
+\\Tirage uniforme entre [a,b] pour les puissances maximales de chacun des relais
+100
+300
+
+\\Tirage uniforme entre [a,b] pour la portée de communication de chaque relais
+180
+200
+
+\\pas de déplacement des unité à considérer avec un mode aléatoire de déplacement
+20
+
+\\nombre de scénario à générer
+10

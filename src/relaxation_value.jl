@@ -207,11 +207,6 @@ function exact_cutting_plane(relaxed_modele, instance, connexity_module, expefol
     pool=[]
     y = relaxed_modele[:y]
     x = relaxed_modele[:x]
-    # nb_contraintes = 0
-    # for (F, S) in list_of_constraint_types(relaxed_modele)
-    #     nb_contraintes += num_constraints(relaxed_modele, F, S)
-    # end
-    # println("nb_contraintes before cutting plane: $nb_contraintes")
     while !is_over
         optimize!(relaxed_modele)
         x_vals = value.(relaxed_modele[:x])

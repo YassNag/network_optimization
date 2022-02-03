@@ -11,13 +11,13 @@ yes
 no 
 
 \\ajout d'un callback vide (yes/no)
-no
+yes
 
 \\ajout des inégalités de couverture (yes/no)
 yes
 
 \\séparation uniquement à la racine (yes/no)
-no
+yes
 
 \\fréquence de séparation (int)
 1000
