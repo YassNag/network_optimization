@@ -1,2 +1,11 @@
-Bib,Inst,Var,Const,DomConst,CoverI,Nodes,Gap,CPU
-367positions,scenario_1.dat,133492,412602,15,33,7482,20.79,100.03
+Bib,Inst,Var,Const,DomConst,CoverI,Nodes,Gap,CPU,Obj,Opt
+367positions,scenario_1.dat,133492,412602,15,26,49218,17.77,1909.59,280.0,yes
+367positions,scenario_10.dat,158657,489843,13,121,162048,27.0,8101.73,209.0,time limit with solution
+367positions,scenario_2.dat,158502,489368,14,9,10011,14.65,7901.99,230.0,time limit with solution
+367positions,scenario_3.dat,165265,510121,14,3,6653,11.87,1982.47,313.0,yes
+367positions,scenario_4.dat,120865,373775,13,35,70991,22.17,6873.09,256.0,yes
+367positions,scenario_5.dat,165320,510286,14,1,6805,23.72,1393.72,203.0,yes
+367positions,scenario_6.dat,158200,488442,13,15,40815,22.82,4948.97,182.0,yes
+367positions,scenario_7.dat,109793,339771,17,5,16923,19.79,2197.57,301.0,yes
+367positions,scenario_8.dat,133492,412602,15,9,54388,17.77,5131.97,280.0,yes
+367positions,scenario_9.dat,105839,327573,14,4,8829,11.4,1545.92,339.0,yes
